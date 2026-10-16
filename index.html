@@ -1,0 +1,112 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#171222">
+  <title>Seguidores Brasileiros | Divulgação</title>
+  <style>
+    :root{--bg:#100e16;--card:#1d1827;--line:#413252;--text:#f7f2ff;--muted:#c7bad8;--accent:#bd91ff}
+    *{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--text);font:16px system-ui,-apple-system,Segoe UI,sans-serif}
+    main{max-width:720px;margin:auto;padding:22px 16px 48px}
+    header{text-align:center;padding:24px 8px 18px}
+    h1{margin:0;color:var(--accent);font-size:clamp(27px,7vw,38px);letter-spacing:.4px}
+    header p,.muted{color:var(--muted)}.step{display:flex;gap:7px;margin:12px 0 24px}
+    .step span{height:5px;flex:1;border-radius:99px;background:#39313f}.step span.active{background:var(--accent)}
+    .panel{background:var(--card);border:1px solid var(--line);border-radius:18px;padding:18px;margin:12px 0}
+    .packages{display:grid;gap:10px}.package{width:100%;text-align:left;background:#171321;color:var(--text);border:1px solid var(--line);border-radius:13px;padding:15px;cursor:pointer}
+    .package.selected{border:2px solid var(--accent)}.package strong{display:block;font-size:17px}.package small{color:var(--muted)}
+    label{display:block;margin:14px 0 6px;font-weight:600}input,select{width:100%;padding:13px;border-radius:10px;border:1px solid #665477;background:#100e16;color:var(--text);font:inherit}
+    button.primary,button.secondary{width:100%;padding:14px;border-radius:12px;font:inherit;font-weight:700;cursor:pointer;margin-top:14px}
+    button.primary{background:var(--accent);color:#1b1029;border:0}button.secondary{background:transparent;color:var(--text);border:1px solid var(--line)}
+    .hidden{display:none}.notice{font-size:13px;color:var(--muted);line-height:1.5}.summary{display:flex;justify-content:space-between;gap:12px;padding:9px 0;border-bottom:1px solid var(--line)}
+    footer{text-align:center;color:var(--muted);font-size:12px;margin-top:24px}
+  </style>
+</head>
+<body>
+<main>
+  <header>
+    <h1>SEGUIDORES BRASILEIROS</h1>
+    <p>Divulgação e crescimento orgânico para seu perfil</p>
+  </header>
+  <div class="step" aria-label="Etapas do pedido"><span id="bar1" class="active"></span><span id="bar2"></span><span id="bar3"></span></div>
+
+  <section id="screen1" class="panel">
+    <h2>1. Escolha um serviço</h2>
+    <p class="muted">Selecione um serviço de divulgação. Resultados de audiência não são garantidos.</p>
+    <div class="packages" id="packages"></div>
+    <button class="primary" id="toDetails">Continuar</button>
+  </section>
+
+  <section id="screen2" class="panel hidden">
+    <h2>2. Seus dados</h2>
+    <div class="summary"><span id="chosenService"></span><strong id="chosenPrice"></strong></div>
+    <form id="orderForm">
+      <label for="contact">WhatsApp ou e-mail</label>
+      <input id="contact" name="contact" required maxlength="160" placeholder="Como podemos falar com você?">
+      <label for="handle">@ do Instagram</label>
+      <input id="handle" name="handle" required maxlength="80" placeholder="@seuperfil">
+      <label for="notes">Observações (opcional)</label>
+      <input id="notes" name="notes" maxlength="300" placeholder="Conte um pouco sobre seu objetivo">
+      <button class="primary" type="submit">Continuar para pagamento</button>
+    </form>
+    <button class="secondary" id="back1">Voltar</button>
+  </section>
+
+  <section id="screen3" class="panel hidden">
+    <h2>3. Pagamento</h2>
+    <div class="summary"><span>Serviço</span><strong id="payService"></strong></div>
+    <div class="summary"><span>Valor</span><strong id="payPrice"></strong></div>
+    <p>O pagamento Pix será habilitado quando o responsável configurar um provedor de pagamentos e o servidor seguro descrito no README.</p>
+    <p class="notice">Esta versão inicial não gera QR Code, não recebe dinheiro e não confirma pagamentos. Não envie comprovantes ou dados bancários por este formulário.</p>
+    <button class="primary" id="createOrder">Registrar pedido de demonstração</button>
+    <button class="secondary" id="back2">Voltar aos dados</button>
+    <div id="result" class="notice" role="status"></div>
+  </section>
+  <footer>Serviços de divulgação legítimos. Nunca informe sua senha do Instagram.</footer>
+</main>
+<script>
+const catalog = [
+  {id:"divulgacao-basica", name:"Divulgação básica", desc:"Planejamento de divulgação para perfil", price:3},
+  {id:"divulgacao-plus", name:"Divulgação ampliada", desc:"Plano de conteúdo e divulgação", price:10},
+  {id:"campanha-inicial", name:"Campanha inicial", desc:"Estratégia para alcançar novas pessoas", price:20},
+  {id:"campanha-avancada", name:"Campanha avançada", desc:"Planejamento de campanha por etapas", price:40},
+  {id:"campanha-premium", name:"Campanha premium", desc:"Plano completo de conteúdo e divulgação", price:60}
+];
+let selected = 0;
+let orderData = null;
+const money = n => n.toLocaleString("pt-BR",{style:"currency",currency:"BRL"});
+const $ = id => document.getElementById(id);
+function renderPackages(){
+  $("packages").innerHTML = catalog.map((p,i)=>`
+    <button class="package ${i===selected?"selected":""}" data-index="${i}">
+      <strong>${p.name} — ${money(p.price)}</strong><small>${p.desc}</small>
+    </button>`).join("");
+  document.querySelectorAll(".package").forEach(b=>b.addEventListener("click",()=>{
+    selected=Number(b.dataset.index);renderPackages();
+  }));
+}
+function show(n){
+  [1,2,3].forEach(i=>{$("screen"+i).classList.toggle("hidden",i!==n);$("bar"+i).classList.toggle("active",i<=n)});
+  window.scrollTo({top:0,behavior:"smooth"});
+}
+renderPackages();
+$("toDetails").addEventListener("click",()=>{
+  const p=catalog[selected];$("chosenService").textContent=p.name;$("chosenPrice").textContent=money(p.price);show(2);
+});
+$("back1").addEventListener("click",()=>show(1));
+$("back2").addEventListener("click",()=>show(2));
+$("orderForm").addEventListener("submit",e=>{
+  e.preventDefault();
+  const p=catalog[selected];
+  orderData={service:p.name,serviceId:p.id,price:p.price,contact:$("contact").value.trim(),instagram:$("handle").value.trim().replace(/^@/,""),notes:$("notes").value.trim()};
+  $("payService").textContent=p.name;$("payPrice").textContent=money(p.price);show(3);
+});
+$("createOrder").addEventListener("click",()=>{
+  if(!orderData)return;
+  $("result").textContent="Demonstração: pedido preparado no navegador. Para salvar pedidos, confirmar Pix e notificar no WhatsApp, configure um backend seguro conforme o README.";
+  // Intentionally no payment or personal-data transmission in this demo.
+});
+</script>
+</body>
+</html>
